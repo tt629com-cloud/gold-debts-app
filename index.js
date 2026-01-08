@@ -9,8 +9,8 @@ app.use(express.json({ limit: "5mb" }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // ===== يوزر وباس =====
-const USERNAME = "admin";
-const PASSWORD = "1234";
+const USERNAME = "gold";
+const PASSWORD = "2626";
 
 // ===== أدوات =====
 const daysBetween = (a, b) => Math.floor((b - a) / 86400000);
