@@ -8,13 +8,13 @@ const FILE = path.join(__dirname, "debts.json");
 if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, "[]");
 
 // ===== MongoDB URI =====
-// • محليًا: يستخدم رابطك الحالي
-// • أونلاين (Render): يستخدم متغير البيئة MONGODB_URI
+// • محليًا: يستخدم الرابط المكتوب
+// • أونلاين (Render): يستخدم MONGODB_URI من Environment Variables
 const MONGODB_URI =
   process.env.MONGODB_URI ||
   "mongodb+srv://tt629com_db_user:eTwICin6eTp4sHRN@cluster0.fz1wdvk.mongodb.net/?appName=Cluster0";
 
-// حماية إضافية
+// حماية
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined");
 }
@@ -56,16 +56,37 @@ async function getClient() {
   return client;
 }
 
-// ===== Sync للسحابة =====
-async function syncToCloud(debts) {
+async function getCollection() {
   const c = await getClient();
-  const col = c.db(DB_NAME).collection(COLLECTION);
+  return c.db(DB_NAME).collection(COLLECTION);
+}
+
+// ===== رفع للسحابة =====
+async function syncToCloud(debts) {
+  const col = await getCollection();
 
   await col.updateOne(
     { _id: STATE_ID },
-    { $set: { debts, updatedAt: new Date() } },
+    {
+      $set: {
+        debts,
+        updatedAt: new Date().toISOString()
+      }
+    },
     { upsert: true }
   );
+}
+
+// ===== سحب من السحابة (الأهم) =====
+async function loadCloud() {
+  const col = await getCollection();
+  const doc = await col.findOne({ _id: STATE_ID });
+
+  if (!doc || !Array.isArray(doc.debts)) {
+    return null;
+  }
+
+  return doc.debts;
 }
 
 // ===== Auto Sync (غير قاتل للتطبيق) =====
@@ -96,6 +117,7 @@ async function forceSync(debts) {
 module.exports = {
   loadLocal,
   saveLocal,
+  loadCloud,     // 🔥 هاي الجديدة
   autoSync,
   forceSync
 };
