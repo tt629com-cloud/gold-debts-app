@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>شركة روعة الأناقة</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<div id="login" class="page active">
+  <div class="form-box" style="text-align:center;">
+    <img src="/images/logo.png" style="width:320px;margin-bottom:20px;">
+    <h2>تسجيل الدخول</h2>
+
+    <!-- منع اقتراحات المتصفح -->
+    <input id="user"
+      placeholder="اسم المستخدم"
+      value="admin"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="text">
+
+    <!-- أفضل طريقة لمنع حفظ/اقتراح كلمات المرور -->
+    <input id="pass"
+      type="password"
+      placeholder="رمز الدخول"
+      autocomplete="new-password"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="text">
+
+    <div class="card" onclick="login()">دخول</div>
+  </div>
+</div>
+
+<header>
+  <div class="header-right">
+    <img src="/images/logo.png" id="logo">
+  </div>
+  <div class="header-center">
+    <div class="basmala">بِسْمِ اللَّهِ الرَّحْمٰنِ الرَّحِيم</div>
+    <div class="ayah">﴿وَفِي السَّمَاءِ رِزْقُكُمْ وَمَا تُوعَدُونَ﴾</div>
+  </div>
+  <button id="syncBtn">مزامنة المعلومات</button>
+</header>
+
+<div class="company-name">شركة روعة الأناقة</div>
+
+<div id="home" class="page">
+  <div class="menu">
+    <div class="card" onclick="openPage('addCustomer')">إضافة زبون</div>
+    <div class="card" onclick="openPage('debts')">عرض الديون</div>
+    <div class="card" onclick="openPage('late')">المتأخرين</div>
+    <div class="card" onclick="openPage('settings')">الإعدادات</div>
+  </div>
+</div>
+
+<div id="addCustomer" class="page">
+  <button class="backBtn" onclick="goHome()">رجوع</button>
+  <h2>إضافة زبون</h2>
+  <div class="form-box">
+
+    <!-- منع اقتراحات المتصفح بكل حقول إضافة الزبون -->
+    <input id="c_name"
+      placeholder="اسم الزبون"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="text">
+
+    <input id="c_phone"
+      placeholder="رقم الهاتف"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="tel">
+
+    <input id="c_address"
+      placeholder="العنوان"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="text">
+
+    <input id="c_remaining"
+      placeholder="مبلغ الدين (دينار)"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"
+      inputmode="numeric">
+
+    <textarea id="c_notes"
+      placeholder="ملاحظات"
+      autocomplete="off"
+      autocapitalize="off"
+      autocorrect="off"
+      spellcheck="false"></textarea>
+
+    <div class="card" onclick="saveCustomer()">حفظ</div>
+  </div>
+</div>
+
+<div id="debts" class="page"></div>
+<div id="late" class="page"></div>
+
+<div id="debtDetails" class="page">
+  <button class="backBtn" onclick="backToDebts()">رجوع</button>
+  <h2>تفاصيل المديون</h2>
+  <div class="detail-wrap" id="detailsBox"></div>
+</div>
+
+<div id="settings" class="page">
+  <button class="backBtn" onclick="goHome()">رجوع</button>
+  <h2>الإعدادات</h2>
+
+  <div class="detail-wrap">
+    <div class="mini-card">
+      <div style="font-weight:700; font-size:18px; margin-bottom:10px;">نسخ احتياطي</div>
+      <div class="detail-line">ينزل ملف JSON بيه كل الديون.</div>
+      <div style="margin-top:10px; text-align:center;">
+        <button class="smallBtn" onclick="downloadBackup()">تحميل نسخة احتياطية</button>
+      </div>
+    </div>
+
+    <div class="mini-card">
+      <div style="font-weight:700; font-size:18px; margin-bottom:10px;">استرجاع نسخة</div>
+      <div class="detail-line">اختَر ملف النسخة الاحتياطية (JSON) وبعدين استرجاع.</div>
+      <input type="file" id="restoreFile" accept="application/json">
+      <div style="text-align:center;">
+        <button class="smallBtn" onclick="restoreBackup()">استرجاع</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  مجموع الدين الكلي: <strong id="totalDebt">0 دينار</strong>
+</footer>
+
+<script>
+let authHeader="";
+let _debtsCache = [];
+let _currentDebtId = null;
+let _currentDebtObj = null;
+
+/* ✅ تحذير الخروج إذا ما صار Sync */
+let needsSync = false;
+
+function remainingText(n){
+  const v = Number(n || 0);
+  return v === 0 ? "صفر" : v;
+}
+
+function login(){
+  const u = document.getElementById("user").value.trim();
+  const p = document.getElementById("pass").value;
+  authHeader = "Basic " + btoa(u + ":" + p);
+
+  fetch("/debts",{headers:{Authorization:authHeader}})
+    .then(r=>{
+      if(r.status===200){
+        openPage("home");
+        loadTotal();
+      }else if(r.status===401 || r.status===403){
+        alert("بيانات الدخول غير صحيحة");
+      }else{
+        alert("صار خطأ بالسيرفر: " + r.status);
+      }
+    })
+    .catch(()=> alert("ماكو اتصال بالسيرفر. تأكد السيرفر شغال"));
+}
+
+function openPage(id){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+
+  if(id==="addCustomer") clearAddCustomerForm();
+  if(id==="debts") loadDebts();
+  if(id==="late") loadLate();
+
+  setTimeout(setupEnterHandlers, 0);
+}
+
+function goHome(){ openPage("home"); }
+
+function clearAddCustomerForm(){
+  c_name.value="";
+  c_phone.value="";
+  c_address.value="";
+  c_remaining.value="";
+  c_notes.value="";
+}
+
+function saveCustomer(){
+  // ✅ تنبيه خطأ لأي إدخال غير صحيح
+  const name = (c_name.value || "").trim();
+  const amount = Number(c_remaining.value);
+
+  if(!name){
+    alert("خطأ: اسم الزبون مطلوب");
+    return;
+  }
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("خطأ: مبلغ الدين لازم يكون رقم صحيح أكبر من صفر");
+    return;
+  }
+
+  fetch("/debts",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json", Authorization:authHeader },
+    body:JSON.stringify({
+      name:name,
+      phone:c_phone.value,
+      address:c_address.value,
+      totalAmount:amount,
+      remaining:amount,
+      notes:c_notes.value
+    })
+  })
+  .then(async (r)=>{
+    if(!r.ok){
+      let msg="خطأ: بيانات غير صحيحة";
+      try{ const data=await r.json(); if(data && data.error) msg="خطأ: "+data.error; }catch(e){}
+      alert(msg); return;
+    }
+    alert("تم الحفظ");
+    needsSync = true; /* ✅ صار تغيير */
+    clearAddCustomerForm();
+    goHome();
+    loadTotal();
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+/* ===== صفحة الديون ===== */
+function ensureDebtsShell(){
+  if(document.getElementById("debtsList")) return;
+
+  debts.innerHTML = `
+    <button class="backBtn" onclick="goHome()">رجوع</button>
+    <h2>قائمة الديون</h2>
+
+    <div class="inline-row">
+      <input class="grow" id="debtSearch" placeholder="بحث بالاسم / الهاتف / العنوان / الملاحظات"
+        autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
+      <select id="filterStatus">
+        <option value="all">الكل</option>
+        <option value="unpaid">غير مسدد</option>
+        <option value="paid">مسدد</option>
+      </select>
+      <select id="sortBy">
+        <option value="newest">الأحدث</option>
+        <option value="oldest">الأقدم</option>
+        <option value="remaining_desc">الأكثر باقي</option>
+        <option value="remaining_asc">الأقل باقي</option>
+        <option value="name">الاسم</option>
+      </select>
+      <button class="smallBtn" id="applyBtn">تطبيق</button>
+      <button class="smallBtn" id="resetBtn">مسح</button>
+    </div>
+
+    <div id="debtsList"></div>
+  `;
+
+  const s = document.getElementById("debtSearch");
+  const f = document.getElementById("filterStatus");
+  const so = document.getElementById("sortBy");
+
+  s.addEventListener("input", applyListTools);
+  f.addEventListener("change", applyListTools);
+  so.addEventListener("change", applyListTools);
+
+  document.getElementById("applyBtn").onclick = applyListTools;
+  document.getElementById("resetBtn").onclick = resetListTools;
+}
+
+function loadDebts(){
+  ensureDebtsShell();
+  fetch("/debts",{headers:{Authorization:authHeader}})
+    .then(r=>r.json())
+    .then(d=>{ _debtsCache = Array.isArray(d) ? d : []; applyListTools(); })
+    .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function renderDebtsList(list){
+  const listBox = document.getElementById("debtsList");
+  if(!listBox) return;
+
+  if(!list.length){
+    listBox.innerHTML = `<div class="card" style="cursor:default;">لا توجد نتائج</div>`;
+    return;
+  }
+
+  const now = Date.now();
+  const DAY = 86400000;
+
+  listBox.innerHTML = list.map(x=>{
+    const remaining = Number(x.remaining || 0);
+    const created = new Date(x.createdAt || 0).getTime();
+    const days = Math.floor((now - created) / DAY);
+
+    let cls = "card ";
+    if(remaining === 0) cls += "debt-paid ";
+    else if(remaining > 0 && remaining <= 100) cls += "debt-small ";
+    else if(remaining >= 101 && remaining <= 150) cls += "debt-medium ";
+    else if(remaining > 300) cls += "debt-high ";
+    else cls += "debt-normal ";
+
+    if(days > 30 && remaining > 0) cls += "debt-late ";
+
+    return `
+      <div class="${cls}" onclick="openDebtDetails(${x.id})">
+        ${x.name || "-"}<br>
+        الباقي: ${remainingText(remaining)} دينار<br>
+        <div style="margin-top:12px;">
+          <button class="smallBtn" onclick="pay(event, ${x.id})">تسديد</button>
+          <button class="smallBtn" onclick="addDebt(event, ${x.id})">إضافة دين</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function applyListTools(){
+  const s = document.getElementById("debtSearch");
+  const f = document.getElementById("filterStatus");
+  const so = document.getElementById("sortBy");
+
+  const q = (s?.value || "").trim().toLowerCase();
+  const filter = f?.value || "all";
+  const sortBy = so?.value || "newest";
+
+  let out = [..._debtsCache];
+
+  if(filter === "unpaid") out = out.filter(x => Number(x.remaining||0) > 0);
+  if(filter === "paid") out = out.filter(x => Number(x.remaining||0) <= 0);
+
+  if(q){
+    out = out.filter(x=>{
+      const blob = [x.name, x.phone, x.address, x.notes].filter(Boolean).join(" ").toLowerCase();
+      return blob.includes(q);
+    });
+  }
+
+  out.sort((a,b)=>{
+    const ra = Number(a.remaining||0), rb = Number(b.remaining||0);
+    const da = new Date(a.createdAt||0).getTime(), db = new Date(b.createdAt||0).getTime();
+    const na = (a.name||"").localeCompare(b.name||"", "ar");
+    switch(sortBy){
+      case "oldest": return da - db;
+      case "remaining_desc": return rb - ra;
+      case "remaining_asc": return ra - rb;
+      case "name": return na;
+      default: return db - da;
+    }
+  });
+
+  renderDebtsList(out);
+}
+
+function resetListTools(){
+  const s = document.getElementById("debtSearch");
+  const f = document.getElementById("filterStatus");
+  const so = document.getElementById("sortBy");
+  if(s) s.value = "";
+  if(f) f.value = "all";
+  if(so) so.value = "newest";
+  applyListTools();
+}
+
+/* ===== تفاصيل ===== */
+function openDebtDetails(id){
+  _currentDebtId = id;
+  openPage("debtDetails");
+  loadDebtDetails(id);
+}
+function backToDebts(){ openPage("debts"); }
+
+function fmtDate(iso){
+  if(!iso) return "-";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleString("ar-IQ");
+}
+
+function loadDebtDetails(id){
+  detailsBox.innerHTML = `<div class="mini-card">جاري التحميل...</div>`;
+
+  fetch("/debts/"+id, {headers:{Authorization:authHeader}})
+    .then(r=> r.ok ? r.json() : null)
+    .then(d=>{
+      if(!d){
+        detailsBox.innerHTML = `<div class="mini-card">ما لكيت هالمديون.</div>`;
+        return;
+      }
+
+      _currentDebtObj = d;
+
+      const payments = Array.isArray(d.payments) ? d.payments : [];
+      const additions = Array.isArray(d.additions) ? d.additions : [];
+      const audit = Array.isArray(d.auditLog) ? d.auditLog : [];
+
+      const totalPaid = payments.reduce((s,p)=>s + Number(p.amount||0), 0);
+      const totalAdded = additions.reduce((s,a)=>s + Number(a.amount||0), 0);
+      const remaining = Number(d.remaining||0);
+
+      const additionsHtml = additions.length ? additions.map(a=>`
+        <div class="movement-row">
+          <div class="movement-text">+ ${Number(a.amount||0)} دينار - ${fmtDate(a.date)}</div>
+          <div class="movement-actions">
+            <button class="smallBtn" onclick="editAddition('${a.id}')">تعديل</button>
+            <button class="smallBtn" onclick="deleteAddition('${a.id}')">حذف</button>
+          </div>
+        </div>
+      `).join("") : `<div class="detail-line">لا توجد إضافات دين بعد.</div>`;
+
+      const paymentsHtml = payments.length ? payments.map(p=>`
+        <div class="movement-row">
+          <div class="movement-text">- ${Number(p.amount||0)} دينار - ${fmtDate(p.date)}</div>
+          <div class="movement-actions">
+            <button class="smallBtn" onclick="editPayment('${p.id}')">تعديل</button>
+            <button class="smallBtn" onclick="deletePayment('${p.id}')">حذف</button>
+          </div>
+        </div>
+      `).join("") : `<div class="detail-line">لا توجد تسديدات بعد.</div>`;
+
+      const auditHtml = audit.length ? audit.slice(-20).reverse().map(x=>`
+        <div class="movement-row">
+          <div class="movement-text">${x.action} - ${fmtDate(x.at)}</div>
+          <div class="movement-actions" style="opacity:0.8; font-size:14px;">
+            ${x.oldAmount !== undefined ? `old: ${x.oldAmount}` : ""}
+            ${x.newAmount !== undefined ? ` new: ${x.newAmount}` : ""}
+            ${x.amount !== undefined ? ` amt: ${x.amount}` : ""}
+          </div>
+        </div>
+      `).join("") : `<div class="detail-line">لا يوجد سجل بعد.</div>`;
+
+      detailsBox.innerHTML = `
+        <div class="mini-card">
+          <div class="detail-line"><strong>الاسم:</strong> ${d.name || "-"}</div>
+          <div class="detail-line"><strong>الهاتف:</strong> ${d.phone || "-"}</div>
+          <div class="detail-line"><strong>العنوان:</strong> ${d.address || "-"}</div>
+          <div class="detail-line"><strong>تاريخ الإضافة الأول:</strong> ${fmtDate(d.createdAt)}</div>
+          <hr class="sep">
+
+          <div class="detail-line"><strong>الدين اللاحق:</strong> ${remainingText(totalAdded)} دينار</div>
+          <div class="detail-line"><strong>مجموع التسديد:</strong> ${totalPaid} دينار</div>
+          <div class="detail-line"><strong>باقي الدين:</strong> ${remainingText(remaining)} دينار</div>
+
+          <hr class="sep">
+          <div class="detail-line"><strong>ملاحظات:</strong> ${d.notes ? d.notes : "-"}</div>
+
+          <div style="margin-top:14px; text-align:center;">
+            <button class="smallBtn" onclick="addDebtFromDetails()">إضافة دين</button>
+            <button class="smallBtn" onclick="payFromDetails()">تسديد</button>
+            <button class="smallBtn" onclick="printStatement()">طباعة كشف حساب</button>
+            <button class="smallBtn" onclick="editCustomer()">تعديل معلومات</button>
+            <button class="smallBtn" onclick="deleteCustomer()">حذف الزبون</button>
+          </div>
+        </div>
+
+        <div class="mini-card">
+          <div style="font-weight:700; font-size:18px; margin-bottom:8px;">إضافات الدين</div>
+          ${additionsHtml}
+        </div>
+
+        <div class="mini-card">
+          <div style="font-weight:700; font-size:18px; margin-bottom:8px;">التسديدات</div>
+          ${paymentsHtml}
+        </div>
+
+        <div class="mini-card">
+          <div style="font-weight:700; font-size:18px; margin-bottom:8px;">سجل التغييرات</div>
+          ${auditHtml}
+        </div>
+      `;
+    })
+    .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+/* ===== إضافة/تسديد ===== */
+function addDebtFromDetails(){
+  const raw = prompt("مبلغ الدين الجديد:");
+  if(raw === null) return;
+
+  const amount = Number(raw);
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("خطأ: الرجاء إدخال مبلغ دين صحيح");
+    return;
+  }
+
+  fetch("/debts/"+_currentDebtId+"/add",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json", Authorization:authHeader },
+    body:JSON.stringify({amount})
+  })
+  .then(()=>{ 
+    needsSync = true;
+    loadDebtDetails(_currentDebtId); 
+    loadTotal(); 
+    loadDebts(); 
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function payFromDetails(){
+  const remaining = Number(_currentDebtObj?.remaining || 0);
+
+  if(remaining <= 0){
+    alert("خطأ: هذا الدين مسدد بالكامل، ما تگدر تسدد بعد.");
+    return;
+  }
+
+  const raw = prompt("مبلغ التسديد:");
+  if(raw === null) return;
+
+  const amount = Number(raw);
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("خطأ: الرجاء إدخال مبلغ تسديد صحيح");
+    return;
+  }
+
+  if(amount > remaining){
+    alert("خطأ: مبلغ التسديد أكبر من باقي الدين");
+    return;
+  }
+
+  fetch("/debts/"+_currentDebtId+"/pay",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json", Authorization:authHeader },
+    body:JSON.stringify({amount})
+  })
+  .then(()=>{ 
+    needsSync = true;
+    loadDebtDetails(_currentDebtId); 
+    loadTotal(); 
+    loadDebts(); 
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function pay(e, id){
+  e.stopPropagation();
+
+  const debt = _debtsCache.find(x => x.id == id);
+  if(!debt){
+    alert("خطأ: ما لكيت هذا الزبون");
+    return;
+  }
+
+  const remaining = Number(debt.remaining || 0);
+  if(remaining <= 0){
+    alert("خطأ: هذا الدين مسدد بالكامل");
+    return;
+  }
+
+  const raw = prompt("مبلغ التسديد:");
+  if(raw === null) return;
+
+  const amount = Number(raw);
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("خطأ: الرجاء إدخال مبلغ تسديد صحيح");
+    return;
+  }
+
+  if(amount > remaining){
+    alert("خطأ: مبلغ التسديد أكبر من باقي الدين");
+    return;
+  }
+
+  fetch("/debts/"+id+"/pay",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json", Authorization:authHeader },
+    body:JSON.stringify({amount})
+  })
+  .then(()=>{ 
+    needsSync = true;
+    loadDebts(); 
+    loadTotal(); 
+    if(_currentDebtId == id) loadDebtDetails(id); 
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function addDebt(e, id){
+  e.stopPropagation();
+
+  const raw = prompt("مبلغ الدين الجديد:");
+  if(raw === null) return;
+
+  const amount = Number(raw);
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("خطأ: الرجاء إدخال مبلغ دين صحيح");
+    return;
+  }
+
+  fetch("/debts/"+id+"/add",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json", Authorization:authHeader },
+    body:JSON.stringify({amount})
+  })
+  .then(()=>{ 
+    needsSync = true;
+    loadDebts(); 
+    loadTotal(); 
+    if(_currentDebtId == id) loadDebtDetails(id); 
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+/* ===== طباعة (كما هي) ===== */
+function printStatement(){
+  if(!_currentDebtObj) return;
+
+  const d = _currentDebtObj;
+  const payments = Array.isArray(d.payments)?d.payments:[];
+  const additions = Array.isArray(d.additions)?d.additions:[];
+  const totalPaid = payments.reduce((s,p)=>s + Number(p.amount||0), 0);
+  const totalAdded = additions.reduce((s,a)=>s + Number(a.amount||0), 0);
+  const remaining = Number(d.remaining||0);
+
+  const html = `
+  <html dir="rtl" lang="ar">
+  <head>
+    <meta charset="UTF-8">
+    <title>كشف حساب</title>
+    <style>
+      body{font-family:Tahoma; padding:20px; background:#fff; color:#000;}
+      h2{margin:0 0 10px 0;}
+      .box{border:2px solid #d4af37; padding:12px; margin-top:12px;}
+      .row{line-height:1.8;}
+      .title{font-weight:700;}
+      hr{border:none;border-top:1px solid #d4af37; margin:10px 0;}
+      ul{margin:6px 0 0 0; padding:0 18px;}
+    </style>
+  </head>
+  <body>
+    <h2>كشف حساب زبون</h2>
+
+    <div class="box">
+      <div class="row"><span class="title">الاسم:</span> ${d.name||"-"}</div>
+      <div class="row"><span class="title">الهاتف:</span> ${d.phone||"-"}</div>
+      <div class="row"><span class="title">العنوان hooking:</span> ${d.address||"-"}</div>
+      <div class="row"><span class="title">تاريخ الإضافة:</span> ${fmtDate(d.createdAt)}</div>
+      <hr>
+
+      <div class="row"><span class="title">الدين اللاحق:</span> ${remainingText(totalAdded)} دينار</div>
+      <div class="row"><span class="title">مجموع التسديد:</span> ${totalPaid} دينار</div>
+      <div class="row"><span class="title">باقي الدين:</span> ${remainingText(remaining)} دينار</div>
+
+      <hr>
+      <div class="row"><span class="title">ملاحظات:</span> ${d.notes||"-"}</div>
+    </div>
+
+    <div class="box">
+      <div class="title">إضافات الدين</div>
+      ${additions.length ? `<ul>${additions.map(a=>`<li>+ ${Number(a.amount||0)} دينار - ${fmtDate(a.date)}</li>`).join("")}</ul>` : `<div class="row">لا توجد إضافات</div>`}
+    </div>
+
+    <div class="box">
+      <div class="title">التسديدات</div>
+      ${payments.length ? `<ul>${payments.map(p=>`<li>- ${Number(p.amount||0)} دينار - ${fmtDate(p.date)}</li>`).join("")}</ul>` : `<div class="row">لا توجد تسديدات</div>`}
+    </div>
+
+    <script>window.print();<\/script>
+  </body>
+  </html>`;
+
+  const w = window.open("", "_blank");
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ===== المتأخرين ===== */
+function loadLate(){
+  fetch("/late-debts",{headers:{Authorization:authHeader}})
+    .then(r=>r.json())
+    .then(d=>{
+      late.innerHTML='<button class="backBtn" onclick="goHome()">رجوع</button><h2>المتأخرين</h2>';
+      if(!d.length){
+        late.innerHTML += `<div class="card" style="cursor:default;">لا يوجد متأخرين</div>`;
+        return;
+      }
+      d.forEach(x=>{
+        late.innerHTML+=`<div class="card" style="cursor:default;">${x.name} - ${Number(x.remaining||0)} دينار</div>`;
+      });
+    })
+    .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+/* ===== مجموع الدين الكلي ===== */
+function loadTotal(){
+  fetch("/total-debt",{headers:{Authorization:authHeader}})
+    .then(r=>r.json())
+    .then(d=>{
+      const t = Number(d?.total || 0);
+      totalDebt.innerText = (t === 0 ? "صفر" : t) + " دينار";
+    })
+    .catch(()=>{ totalDebt.innerText = "0 دينار"; });
+}
+
+/* ✅ المزامنة: تصفّر التحذير */
+syncBtn.onclick=()=>{
+  loadTotal();
+  needsSync = false;
+  alert("تمت المزامنة");
+};
+
+/* ===== Backup/Restore ===== */
+function downloadBackup(){
+  fetch("/backup",{headers:{Authorization:authHeader}})
+    .then(r=>r.blob())
+    .then(blob=>{
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "debts-backup.json";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    })
+    .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function restoreBackup(){
+  const f = document.getElementById("restoreFile").files[0];
+  if(!f) return alert("اختَر ملف النسخة أولاً");
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    let data;
+    try{ data = JSON.parse(reader.result); }
+    catch{ alert("الملف مو JSON صحيح"); return; }
+
+    fetch("/restore",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json", Authorization:authHeader },
+      body: JSON.stringify(data)
+    })
+    .then(async r=>{
+      if(!r.ok){
+        let msg="فشل الاسترجاع";
+        try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+        alert(msg); return;
+      }
+      const out = await r.json();
+      alert("تم الاسترجاع. عدد السجلات: " + (out.count||0));
+      needsSync = true;
+      loadTotal();
+      goHome();
+    })
+    .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+  };
+  reader.readAsText(f);
+}
+
+/* ===== Enter behavior ===== */
+function focusNextField(ids, currentId){
+  const idx = ids.indexOf(currentId);
+  if(idx === -1) return false;
+  const next = document.getElementById(ids[idx + 1]);
+  if(next){
+    next.focus();
+    if(next.select) next.select();
+    return true;
+  }
+  return false;
+}
+
+function setupEnterHandlers(){
+  const u = document.getElementById("user");
+  const p = document.getElementById("pass");
+
+  if(u && !u.dataset.enterBound){
+    u.dataset.enterBound="1";
+    u.addEventListener("keydown",(e)=>{
+      if(e.key==="Enter"){ e.preventDefault(); if(p) p.focus(); }
+    });
+  }
+
+  if(p && !p.dataset.enterBound){
+    p.dataset.enterBound="1";
+    p.addEventListener("keydown",(e)=>{
+      if(e.key==="Enter"){ e.preventDefault(); login(); }
+    });
+  }
+
+  const addIds = ["c_name","c_phone","c_address","c_remaining","c_notes"];
+  addIds.forEach((id)=>{
+    const el = document.getElementById(id);
+    if(!el || el.dataset.enterBound) return;
+    el.dataset.enterBound="1";
+    el.addEventListener("keydown",(e)=>{
+      if(e.key!=="Enter") return;
+      if(id==="c_notes"){ e.preventDefault(); saveCustomer(); return; }
+      e.preventDefault();
+      const moved = focusNextField(addIds, id);
+      if(!moved) saveCustomer();
+    });
+  });
+
+  const s = document.getElementById("debtSearch");
+  if(s && !s.dataset.enterBound){
+    s.dataset.enterBound="1";
+    s.addEventListener("keydown",(e)=>{
+      if(e.key==="Enter"){
+        e.preventDefault();
+        applyListTools();
+        s.focus();
+      }
+    });
+  }
+}
+document.addEventListener("DOMContentLoaded", setupEnterHandlers);
+
+/* ===================================================
+   تصحيح زر (تعديل معلومات) و (حذف الزبون)
+   بدون تغيير أي منطق سابق
+   =================================================== */
+
+/* ===== تعديل معلومات الزبون ===== */
+function editCustomer(){
+  if(!_currentDebtObj || !_currentDebtId){
+    alert("ماكو زبون محدد");
+    return;
+  }
+
+  const name = prompt("اسم الزبون:", _currentDebtObj.name || "");
+  if(!name || name.trim().length < 2){
+    alert("اسم الزبون مطلوب");
+    return;
+  }
+
+  const phone = prompt("رقم الهاتف:", _currentDebtObj.phone || "");
+  const address = prompt("العنوان:", _currentDebtObj.address || "");
+  const notes = prompt("ملاحظات:", _currentDebtObj.notes || "");
+
+  fetch("/debts/" + _currentDebtId, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authHeader
+    },
+    body: JSON.stringify({
+      name: name.trim(),
+      phone: phone ? phone.trim() : "",
+      address: address ? address.trim() : "",
+      notes: notes ? notes.trim() : ""
+    })
+  })
+  .then(async r=>{
+    if(!r.ok){
+      let msg = "فشل تعديل المعلومات";
+      try{
+        const d = await r.json();
+        if(d && d.error) msg = d.error;
+      }catch(e){}
+      alert(msg);
+      return;
+    }
+
+    alert("تم تعديل معلومات الزبون بنجاح");
+    needsSync = true;
+    loadDebtDetails(_currentDebtId);
+    loadDebts();
+  })
+  .catch(()=> alert("مشكلة اتصال بالسيرفر"));
+}
+
+/* ===== حذف الزبون ===== */
+function deleteCustomer(){
+  if(!_currentDebtObj || !_currentDebtId){
+    alert("ماكو زبون محدد");
+    return;
+  }
+
+  const confirmName = prompt(
+    "لتأكيد الحذف، اكتب اسم الزبون كامل:\n" + _currentDebtObj.name
+  );
+
+  if(!confirmName){
+    alert("تم إلغاء الحذف");
+    return;
+  }
+
+  fetch("/debts/" + _currentDebtId, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: authHeader
+    },
+    body: JSON.stringify({ confirmName: confirmName.trim() })
+  })
+  .then(async r=>{
+    if(!r.ok){
+      let msg = "فشل حذف الزبون";
+      try{
+        const d = await r.json();
+        if(d && d.error) msg = d.error;
+      }catch(e){}
+      alert(msg);
+      return;
+    }
+
+    alert("تم حذف الزبون نهائياً");
+    needsSync = true;
+    _currentDebtId = null;
+    _currentDebtObj = null;
+    goHome();
+    loadTotal();
+    loadDebts();
+  })
+  .catch(()=> alert("مشكلة اتصال بالسيرفر"));
+}
+
+/* ✅ تنبيه إجباري قبل الخروج إذا أكو تغييرات بدون مزامنة */
+window.addEventListener("beforeunload", function (e) {
+  if(needsSync){
+    e.preventDefault();
+    e.returnValue = "عندك تغييرات غير متزامنة. سوِ مزامنة قبل ما تطلع.";
+  }
+});
+</script>
+
+</body>
+</html>

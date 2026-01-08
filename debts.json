@@ -1,0 +1,601 @@
+[
+  {
+    "id": 1767183266889,
+    "name": "الادمن",
+    "phone": "98834",
+    "address": "تتت",
+    "totalAmount": 500000,
+    "remaining": 0,
+    "notes": "هه",
+    "createdAt": "2025-12-31T12:14:26.889Z",
+    "payments": [
+      {
+        "id": "mk2j9x68j1ph8xax",
+        "amount": 50000,
+        "date": "2025-12-31T12:14:47.662Z"
+      }
+    ],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk2jje9x6x97np48",
+        "action": "RESTORE",
+        "at": "2026-01-06T12:03:26.853Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk3mnx4ys68u266d",
+        "action": "RESTORE",
+        "at": "2026-01-07T06:18:42.946Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk54jbbjscezfe0h",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.311Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767685922858,
+    "name": "مسلم حسن هادي",
+    "phone": "07830936854",
+    "address": "الديوانية",
+    "totalAmount": 1000500,
+    "remaining": 0,
+    "notes": "كل شهر تسديد",
+    "createdAt": "2026-01-06T07:52:02.858Z",
+    "payments": [
+      {
+        "id": "mk2j9x68dj7l41ro",
+        "amount": 40000,
+        "date": "2026-01-06T07:53:55.526Z"
+      },
+      {
+        "id": "mk2jku9rej9fgwu4",
+        "amount": 10500,
+        "date": "2026-01-06T12:04:34.239Z"
+      }
+    ],
+    "additions": [
+      {
+        "id": "mk2jknk244t0nt0j",
+        "amount": 500,
+        "date": "2026-01-06T12:04:25.538Z"
+      }
+    ],
+    "auditLog": [
+      {
+        "id": "mk2jje9xibww28po",
+        "action": "RESTORE",
+        "at": "2026-01-06T12:03:26.853Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk2jknk2h5l9r7ig",
+        "action": "ADD_DEBT",
+        "at": "2026-01-06T12:04:25.538Z",
+        "itemId": "mk2jknk244t0nt0j",
+        "amount": 500
+      },
+      {
+        "id": "mk2jku9rid60kh5g",
+        "action": "PAY",
+        "at": "2026-01-06T12:04:34.239Z",
+        "itemId": "mk2jku9rej9fgwu4",
+        "amount": 10500
+      },
+      {
+        "id": "mk2l82fkrpnva4in",
+        "action": "EDIT_CUSTOMER",
+        "at": "2026-01-06T12:50:37.520Z",
+        "old": {
+          "name": "مسلم حسن هادي",
+          "phone": "07830936854",
+          "address": "الديوانية",
+          "notes": "كل شهر تسديد"
+        },
+        "updated": {
+          "name": "مسلم حسن هادي",
+          "phone": "07830936854",
+          "address": "الديوانية",
+          "notes": "كل شهر تسديد"
+        }
+      },
+      {
+        "id": "mk3mnx4yswzlc4np",
+        "action": "RESTORE",
+        "at": "2026-01-07T06:18:42.946Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk54jbbjvt040lf7",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.311Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767685971102,
+    "name": "عبد الله ابراهيم كاظم",
+    "phone": "00000000000000000",
+    "address": "الديوانية",
+    "totalAmount": 2000000,
+    "remaining": 1000000,
+    "notes": "تسديد كل شهرين ",
+    "createdAt": "2026-01-06T07:52:51.102Z",
+    "payments": [],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk2jje9x11tm86i9",
+        "action": "RESTORE",
+        "at": "2026-01-06T12:03:26.853Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk3mnx4yrdt2xsw4",
+        "action": "RESTORE",
+        "at": "2026-01-07T06:18:42.946Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk54jbbj65ydmz48",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.311Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767686161161,
+    "name": "حسين علي عبجد الحسين",
+    "phone": "07830768278",
+    "address": "عفك",
+    "totalAmount": 5000000,
+    "remaining": 300000,
+    "notes": "جلب",
+    "createdAt": "2026-01-06T07:56:01.161Z",
+    "payments": [],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk2jje9xj45twov0",
+        "action": "RESTORE",
+        "at": "2026-01-06T12:03:26.853Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk3mnx4zzns6qc1j",
+        "action": "RESTORE",
+        "at": "2026-01-07T06:18:42.947Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk54jbbjoebkcfyk",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.311Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767686479915,
+    "name": "كاظم ابراهيم كاظم",
+    "phone": "07822299519",
+    "address": "التقية",
+    "totalAmount": 9000050,
+    "remaining": 0,
+    "notes": "كل يومين يسدد",
+    "createdAt": "2026-01-06T08:01:19.915Z",
+    "payments": [
+      {
+        "id": "mk2j9x681yhlma5h",
+        "amount": 8000000,
+        "date": "2026-01-06T08:02:50.777Z"
+      },
+      {
+        "id": "mk2j9x6819st85gw",
+        "amount": 50,
+        "date": "2026-01-06T08:48:03.247Z"
+      }
+    ],
+    "additions": [
+      {
+        "id": "mk2j9x68e453n2e3",
+        "amount": 50,
+        "date": "2026-01-06T08:47:42.083Z"
+      }
+    ],
+    "auditLog": [
+      {
+        "id": "mk2jje9xh0ssxx90",
+        "action": "RESTORE",
+        "at": "2026-01-06T12:03:26.853Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk3mnx4z49aa3606",
+        "action": "RESTORE",
+        "at": "2026-01-07T06:18:42.947Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk54jbbjzz0f90ev",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.311Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767766462059,
+    "name": "عبود",
+    "phone": "0783093854",
+    "address": "التقية",
+    "totalAmount": 50,
+    "remaining": 0,
+    "notes": "",
+    "createdAt": "2026-01-07T06:14:22.059Z",
+    "payments": [
+      {
+        "id": "mk3mkgdppisa4gw4",
+        "amount": 40,
+        "date": "2026-01-07T06:16:01.261Z"
+      },
+      {
+        "id": "mk3mkr50dz5vqdxc",
+        "amount": 5,
+        "date": "2026-01-07T06:16:15.204Z"
+      },
+      {
+        "id": "mk3mkup5rnthi2t5",
+        "amount": 5,
+        "date": "2026-01-07T06:16:19.817Z"
+      }
+    ],
+    "additions": [
+      {
+        "id": "mk3mjy0cehbmyysg",
+        "amount": 25,
+        "date": "2026-01-07T06:15:37.453Z"
+      }
+    ],
+    "auditLog": [
+      {
+        "id": "mk3mibu32htxdnt5",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-07T06:14:22.059Z",
+        "totalAmount": 25,
+        "remaining": 25
+      },
+      {
+        "id": "mk3mjy0dceqmukuj",
+        "action": "ADD_DEBT",
+        "at": "2026-01-07T06:15:37.453Z",
+        "itemId": "mk3mjy0cehbmyysg",
+        "amount": 25
+      },
+      {
+        "id": "mk3mkgdpxnhqh3cr",
+        "action": "PAY",
+        "at": "2026-01-07T06:16:01.261Z",
+        "itemId": "mk3mkgdppisa4gw4",
+        "amount": 40
+      },
+      {
+        "id": "mk3mkr51sistrc02",
+        "action": "PAY",
+        "at": "2026-01-07T06:16:15.205Z",
+        "itemId": "mk3mkr50dz5vqdxc",
+        "amount": 5
+      },
+      {
+        "id": "mk3mkup5q7l60cx1",
+        "action": "PAY",
+        "at": "2026-01-07T06:16:19.817Z",
+        "itemId": "mk3mkup5rnthi2t5",
+        "amount": 5
+      },
+      {
+        "id": "mk3mnx4zsj98sw7o",
+        "action": "RESTORE",
+        "at": "2026-01-07T06:18:42.947Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk54jbbj1v580tl7",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767771530895,
+    "name": "سمسم",
+    "phone": "07830936854",
+    "address": "التقية",
+    "totalAmount": 108,
+    "remaining": 8,
+    "notes": "كل شهر",
+    "createdAt": "2026-01-07T07:38:50.895Z",
+    "payments": [
+      {
+        "id": "mk3pjmixvn41rhy5",
+        "amount": 25,
+        "date": "2026-01-07T07:39:21.417Z"
+      },
+      {
+        "id": "mk3pjsq9h4z2xt8j",
+        "amount": 75,
+        "date": "2026-01-07T07:39:29.457Z"
+      }
+    ],
+    "additions": [
+      {
+        "id": "mk3pjd3oixpg6h4q",
+        "amount": 50,
+        "date": "2026-01-07T07:39:09.204Z"
+      },
+      {
+        "id": "mk3wz4xjg14yqged",
+        "amount": 8,
+        "date": "2026-01-07T11:07:22.423Z"
+      }
+    ],
+    "auditLog": [
+      {
+        "id": "mk3piyz4o2twck35",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-07T07:38:50.896Z",
+        "totalAmount": 50,
+        "remaining": 50
+      },
+      {
+        "id": "mk3pjd3o2r1eezoc",
+        "action": "ADD_DEBT",
+        "at": "2026-01-07T07:39:09.204Z",
+        "itemId": "mk3pjd3oixpg6h4q",
+        "amount": 50
+      },
+      {
+        "id": "mk3pjmixx4j7zaik",
+        "action": "PAY",
+        "at": "2026-01-07T07:39:21.417Z",
+        "itemId": "mk3pjmixvn41rhy5",
+        "amount": 25
+      },
+      {
+        "id": "mk3pjsq9th2y2e2h",
+        "action": "PAY",
+        "at": "2026-01-07T07:39:29.457Z",
+        "itemId": "mk3pjsq9h4z2xt8j",
+        "amount": 75
+      },
+      {
+        "id": "mk3wz4xk3wy8n6kk",
+        "action": "ADD_DEBT",
+        "at": "2026-01-07T11:07:22.424Z",
+        "itemId": "mk3wz4xjg14yqged",
+        "amount": 8
+      },
+      {
+        "id": "mk54jbbk2ao4th9f",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767774423054,
+    "name": "سمسم المسمسم",
+    "phone": "0000000000000",
+    "address": "التقية",
+    "totalAmount": 2,
+    "remaining": 2,
+    "notes": "هيهي",
+    "createdAt": "2026-01-07T08:27:03.054Z",
+    "payments": [],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk3r8ykuqppu6qi3",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-07T08:27:03.054Z",
+        "totalAmount": 2,
+        "remaining": 2
+      },
+      {
+        "id": "mk54jbbkpitjebbe",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767784107488,
+    "name": "محمد",
+    "phone": "00",
+    "address": "0",
+    "totalAmount": 9,
+    "remaining": 9,
+    "notes": "",
+    "createdAt": "2026-01-07T11:08:27.488Z",
+    "payments": [],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk3x0j4wiz4xqx5w",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-07T11:08:27.488Z",
+        "totalAmount": 9,
+        "remaining": 9
+      },
+      {
+        "id": "mk54jbbk3o0r4m39",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767793946311,
+    "name": "مسلم الكارضي",
+    "phone": "07830936854",
+    "address": "التقية",
+    "totalAmount": 90,
+    "remaining": 0,
+    "notes": "مجهول",
+    "createdAt": "2026-01-07T13:52:26.311Z",
+    "payments": [
+      {
+        "id": "mk54k280sap5dx8a",
+        "amount": 90,
+        "date": "2026-01-08T07:27:22.176Z"
+      }
+    ],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk42vetk0oktqg6g",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-07T13:52:26.312Z",
+        "totalAmount": 90,
+        "remaining": 90
+      },
+      {
+        "id": "mk54jbbkdju41nze",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk54k280t9a2a1s3",
+        "action": "PAY",
+        "at": "2026-01-08T07:27:22.176Z",
+        "itemId": "mk54k280sap5dx8a",
+        "amount": 90
+      }
+    ]
+  },
+  {
+    "id": 1767855262680,
+    "name": "زينب",
+    "phone": "0888888888",
+    "address": "المريخ",
+    "totalAmount": 23,
+    "remaining": 23,
+    "notes": "",
+    "createdAt": "2026-01-08T06:54:22.680Z",
+    "payments": [],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk53dmu0eerk55d5",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-08T06:54:22.680Z",
+        "totalAmount": 23,
+        "remaining": 23
+      },
+      {
+        "id": "mk54jbbkf282sqm1",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      }
+    ]
+  },
+  {
+    "id": 1767856408584,
+    "name": "زهراء",
+    "phone": "0000000000",
+    "address": "المريخ",
+    "totalAmount": 33,
+    "remaining": 0,
+    "notes": "",
+    "createdAt": "2026-01-08T07:13:28.584Z",
+    "payments": [
+      {
+        "id": "mk5608d2w4ivau3k",
+        "amount": 33,
+        "date": "2026-01-08T08:07:56.246Z"
+      }
+    ],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk54270p33uh159u",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-08T07:13:28.585Z"
+      },
+      {
+        "id": "mk54jbbk62bpyhlj",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      },
+      {
+        "id": "mk5608d2vzxb0on0",
+        "action": "PAY",
+        "at": "2026-01-08T08:07:56.246Z",
+        "itemId": "mk5608d2w4ivau3k",
+        "amount": 33
+      }
+    ]
+  },
+  {
+    "id": 1767856409194,
+    "name": "زهراء",
+    "phone": "0000000000",
+    "address": "المريخ",
+    "totalAmount": 66,
+    "remaining": 44,
+    "notes": "",
+    "createdAt": "2026-01-08T07:13:29.194Z",
+    "payments": [
+      {
+        "id": "mk543mzt0i733gh3",
+        "amount": 22,
+        "date": "2026-01-08T07:14:35.945Z"
+      }
+    ],
+    "additions": [
+      {
+        "id": "mk543i18kqph1gag",
+        "amount": 33,
+        "date": "2026-01-08T07:14:29.516Z"
+      }
+    ],
+    "auditLog": [
+      {
+        "id": "mk5427hmayifdst0",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-08T07:13:29.194Z"
+      },
+      {
+        "id": "mk543i18x9qo7lex",
+        "action": "ADD_DEBT",
+        "at": "2026-01-08T07:14:29.516Z",
+        "amount": 33
+      },
+      {
+        "id": "mk543mztea5x9zb4",
+        "action": "PAY",
+        "at": "2026-01-08T07:14:35.945Z",
+        "amount": 22
+      },
+      {
+        "id": "mk54jbbk9hmfyobc",
+        "action": "RESTORE",
+        "at": "2026-01-08T07:26:47.312Z",
+        "note": "Restored from backup"
+      }
+    ]
+  }
+]
