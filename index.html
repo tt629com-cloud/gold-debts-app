@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>شركة روعة الأناقة</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
@@ -18,7 +19,6 @@
     <!-- منع اقتراحات المتصفح -->
     <input id="user"
       placeholder="اسم المستخدم"
-      value="admin"
       autocomplete="off"
       autocapitalize="off"
       autocorrect="off"
@@ -156,6 +156,23 @@ let _currentDebtObj = null;
 /* ✅ تحذير الخروج إذا ما صار Sync */
 let needsSync = false;
 
+/* ✅ تحويل الأرقام العربية إلى إنجليزية حتى Number يفهمها */
+function toEnglishDigits(str){
+  const s = String(str ?? "");
+  const map = {
+    "٠":"0","١":"1","٢":"2","٣":"3","٤":"4","٥":"5","٦":"6","٧":"7","٨":"8","٩":"9",
+    "۰":"0","۱":"1","۲":"2","۳":"3","۴":"4","۵":"5","۶":"6","۷":"7","۸":"8","۹":"9"
+  };
+  return s
+    .replace(/[٠-٩۰-۹]/g, ch => map[ch] ?? ch)
+    .replace(/[,،\s]/g, "");
+}
+
+function parseMoney(v){
+  const n = Number(toEnglishDigits(v));
+  return Number.isFinite(n) ? n : NaN;
+}
+
 function remainingText(n){
   const v = Number(n || 0);
   return v === 0 ? "صفر" : v;
@@ -202,9 +219,8 @@ function clearAddCustomerForm(){
 }
 
 function saveCustomer(){
-  // ✅ تنبيه خطأ لأي إدخال غير صحيح
   const name = (c_name.value || "").trim();
-  const amount = Number(c_remaining.value);
+  const amount = parseMoney(c_remaining.value);
 
   if(!name){
     alert("خطأ: اسم الزبون مطلوب");
@@ -234,7 +250,7 @@ function saveCustomer(){
       alert(msg); return;
     }
     alert("تم الحفظ");
-    needsSync = true; /* ✅ صار تغيير */
+    needsSync = true;
     clearAddCustomerForm();
     goHome();
     loadTotal();
@@ -493,7 +509,7 @@ function addDebtFromDetails(){
   const raw = prompt("مبلغ الدين الجديد:");
   if(raw === null) return;
 
-  const amount = Number(raw);
+  const amount = parseMoney(raw);
   if(!Number.isFinite(amount) || amount <= 0){
     alert("خطأ: الرجاء إدخال مبلغ دين صحيح");
     return;
@@ -504,11 +520,16 @@ function addDebtFromDetails(){
     headers:{ "Content-Type":"application/json", Authorization:authHeader },
     body:JSON.stringify({amount})
   })
-  .then(()=>{ 
+  .then(async (r)=>{
+    if(!r.ok){
+      let msg="فشل إضافة الدين";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
     needsSync = true;
-    loadDebtDetails(_currentDebtId); 
-    loadTotal(); 
-    loadDebts(); 
+    loadDebtDetails(_currentDebtId);
+    loadTotal();
+    loadDebts();
   })
   .catch(()=>alert("مشكلة اتصال بالسيرفر"));
 }
@@ -524,7 +545,7 @@ function payFromDetails(){
   const raw = prompt("مبلغ التسديد:");
   if(raw === null) return;
 
-  const amount = Number(raw);
+  const amount = parseMoney(raw);
   if(!Number.isFinite(amount) || amount <= 0){
     alert("خطأ: الرجاء إدخال مبلغ تسديد صحيح");
     return;
@@ -540,11 +561,16 @@ function payFromDetails(){
     headers:{ "Content-Type":"application/json", Authorization:authHeader },
     body:JSON.stringify({amount})
   })
-  .then(()=>{ 
+  .then(async (r)=>{
+    if(!r.ok){
+      let msg="فشل التسديد";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
     needsSync = true;
-    loadDebtDetails(_currentDebtId); 
-    loadTotal(); 
-    loadDebts(); 
+    loadDebtDetails(_currentDebtId);
+    loadTotal();
+    loadDebts();
   })
   .catch(()=>alert("مشكلة اتصال بالسيرفر"));
 }
@@ -567,7 +593,7 @@ function pay(e, id){
   const raw = prompt("مبلغ التسديد:");
   if(raw === null) return;
 
-  const amount = Number(raw);
+  const amount = parseMoney(raw);
   if(!Number.isFinite(amount) || amount <= 0){
     alert("خطأ: الرجاء إدخال مبلغ تسديد صحيح");
     return;
@@ -583,11 +609,16 @@ function pay(e, id){
     headers:{ "Content-Type":"application/json", Authorization:authHeader },
     body:JSON.stringify({amount})
   })
-  .then(()=>{ 
+  .then(async (r)=>{
+    if(!r.ok){
+      let msg="فشل التسديد";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
     needsSync = true;
-    loadDebts(); 
-    loadTotal(); 
-    if(_currentDebtId == id) loadDebtDetails(id); 
+    loadDebts();
+    loadTotal();
+    if(_currentDebtId == id) loadDebtDetails(id);
   })
   .catch(()=>alert("مشكلة اتصال بالسيرفر"));
 }
@@ -598,7 +629,7 @@ function addDebt(e, id){
   const raw = prompt("مبلغ الدين الجديد:");
   if(raw === null) return;
 
-  const amount = Number(raw);
+  const amount = parseMoney(raw);
   if(!Number.isFinite(amount) || amount <= 0){
     alert("خطأ: الرجاء إدخال مبلغ دين صحيح");
     return;
@@ -609,11 +640,123 @@ function addDebt(e, id){
     headers:{ "Content-Type":"application/json", Authorization:authHeader },
     body:JSON.stringify({amount})
   })
-  .then(()=>{ 
+  .then(async (r)=>{
+    if(!r.ok){
+      let msg="فشل إضافة الدين";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
     needsSync = true;
-    loadDebts(); 
-    loadTotal(); 
-    if(_currentDebtId == id) loadDebtDetails(id); 
+    loadDebts();
+    loadTotal();
+    if(_currentDebtId == id) loadDebtDetails(id);
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+/* ===== تعديل/حذف تسديدات وإضافات (كانت ناقصة وتسبب Errors) ===== */
+function editPayment(pid){
+  if(!_currentDebtId) return;
+  const raw = prompt("المبلغ الجديد للتسديد:");
+  if(raw === null) return;
+
+  const amount = parseMoney(raw);
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("خطأ: مبلغ التعديل غير صحيح");
+    return;
+  }
+
+  fetch(`/debts/${_currentDebtId}/payments/${pid}`,{
+    method:"PUT",
+    headers:{ "Content-Type":"application/json", Authorization:authHeader },
+    body: JSON.stringify({ amount })
+  })
+  .then(async r=>{
+    if(!r.ok){
+      let msg="فشل تعديل التسديد";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
+    needsSync = true;
+    loadDebtDetails(_currentDebtId);
+    loadDebts();
+    loadTotal();
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function deletePayment(pid){
+  if(!_currentDebtId) return;
+  const ok = confirm("متأكد تريد حذف التسديد؟");
+  if(!ok) return;
+
+  fetch(`/debts/${_currentDebtId}/payments/${pid}`,{
+    method:"DELETE",
+    headers:{ Authorization:authHeader }
+  })
+  .then(async r=>{
+    if(!r.ok){
+      let msg="فشل حذف التسديد";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
+    needsSync = true;
+    loadDebtDetails(_currentDebtId);
+    loadDebts();
+    loadTotal();
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function editAddition(aid){
+  if(!_currentDebtId) return;
+  const raw = prompt("المبلغ الجديد للإضافة:");
+  if(raw === null) return;
+
+  const amount = parseMoney(raw);
+  if(!Number.isFinite(amount) || amount <= 0){
+    alert("خطأ: مبلغ التعديل غير صحيح");
+    return;
+  }
+
+  fetch(`/debts/${_currentDebtId}/additions/${aid}`,{
+    method:"PUT",
+    headers:{ "Content-Type":"application/json", Authorization:authHeader },
+    body: JSON.stringify({ amount })
+  })
+  .then(async r=>{
+    if(!r.ok){
+      let msg="فشل تعديل الإضافة";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
+    needsSync = true;
+    loadDebtDetails(_currentDebtId);
+    loadDebts();
+    loadTotal();
+  })
+  .catch(()=>alert("مشكلة اتصال بالسيرفر"));
+}
+
+function deleteAddition(aid){
+  if(!_currentDebtId) return;
+  const ok = confirm("متأكد تريد حذف إضافة الدين؟");
+  if(!ok) return;
+
+  fetch(`/debts/${_currentDebtId}/additions/${aid}`,{
+    method:"DELETE",
+    headers:{ Authorization:authHeader }
+  })
+  .then(async r=>{
+    if(!r.ok){
+      let msg="فشل حذف الإضافة";
+      try{ const x=await r.json(); if(x?.error) msg=x.error; }catch(e){}
+      alert(msg); return;
+    }
+    needsSync = true;
+    loadDebtDetails(_currentDebtId);
+    loadDebts();
+    loadTotal();
   })
   .catch(()=>alert("مشكلة اتصال بالسيرفر"));
 }
@@ -710,11 +853,24 @@ function loadTotal(){
     .catch(()=>{ totalDebt.innerText = "0 دينار"; });
 }
 
-/* ✅ المزامنة: تصفّر التحذير */
-syncBtn.onclick=()=>{
-  loadTotal();
-  needsSync = false;
-  alert("تمت المزامنة");
+/* ✅ زر مزامنة حقيقي */
+syncBtn.onclick = async () => {
+  try{
+    const r = await fetch("/sync", { method:"POST", headers:{ Authorization: authHeader } });
+    if(!r.ok){
+      let msg = "فشل المزامنة";
+      try{ const x = await r.json(); if(x?.error) msg = x.error; }catch(e){}
+      alert(msg);
+      return;
+    }
+    needsSync = false;
+    alert("تمت المزامنة بنجاح");
+    loadTotal();
+    if(document.getElementById("debts")?.classList.contains("active")) loadDebts();
+    if(_currentDebtId) loadDebtDetails(_currentDebtId);
+  }catch(e){
+    alert("مشكلة اتصال بالسيرفر أثناء المزامنة");
+  }
 };
 
 /* ===== Backup/Restore ===== */
@@ -824,11 +980,6 @@ function setupEnterHandlers(){
   }
 }
 document.addEventListener("DOMContentLoaded", setupEnterHandlers);
-
-/* ===================================================
-   تصحيح زر (تعديل معلومات) و (حذف الزبون)
-   بدون تغيير أي منطق سابق
-   =================================================== */
 
 /* ===== تعديل معلومات الزبون ===== */
 function editCustomer(){

@@ -597,5 +597,26 @@
         "note": "Restored from backup"
       }
     ]
+  },
+  {
+    "id": 1767939873288,
+    "name": "جعيفر",
+    "phone": "07800000000",
+    "address": "السودان",
+    "totalAmount": 22222,
+    "remaining": 22222,
+    "notes": "",
+    "createdAt": "2026-01-09T06:24:33.288Z",
+    "payments": [],
+    "additions": [],
+    "auditLog": [
+      {
+        "id": "mk6hr4spcqgfgc2z",
+        "action": "CREATE_DEBT",
+        "at": "2026-01-09T06:24:33.289Z",
+        "totalAmount": 22222,
+        "remaining": 22222
+      }
+    ]
   }
 ]

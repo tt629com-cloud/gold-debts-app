@@ -360,6 +360,7 @@ footer strong{
   #syncBtn{ font-size:14px; padding:9px 12px; }
   .menu{ grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); }
 }
+
 /* =========================
    GOLD TEXT + LUXURY FONT
    MINIMAL OVERRIDES ONLY
@@ -412,6 +413,7 @@ textarea::placeholder {
   font-weight: 900;
   letter-spacing: 0.6px;
 }
+
 /* ===== Debt visual indicators ===== */
 .debt-high {
   border-color: #d4af37 !important;
@@ -470,8 +472,66 @@ textarea::placeholder {
   text-decoration: none; /* ⬅️ هذا الحل */
 }
 
-
 /* دين متأخر */
 .debt-late {
   box-shadow: 0 0 10px rgba(244, 67, 54, 0.6);
+}
+
+/* =========================
+   MOBILE PATCH (اختياري)
+   يشتغل فقط على الموبايل
+   وما يلمس الديسكتوب أبداً
+   ========================= */
+@media (max-width: 520px){
+  /* يمنع أي تمدد أفقي مزعج بالموبايل */
+  html, body { overflow-x: hidden; }
+
+  /* خلي الشعار والزر ما يخنقون الهيدر */
+  header{
+    flex-wrap: wrap;
+    gap:10px;
+    padding:12px 12px;
+  }
+
+  /* بالهيدر عندك .header-center absolute
+     بالموبايل يسبب تراكب، نخليه طبيعي فقط بالموبايل */
+  .header-center{
+    position: static;
+    transform: none;
+    order: 3;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .header-right{ order: 1; }
+  #syncBtn{ order: 2; }
+
+  #logo{
+    width:140px;
+    max-height:70px;
+  }
+
+  .menu{
+    width: calc(100% - 16px);
+    gap:12px;
+    padding: 12px 0;
+    grid-template-columns: 1fr;
+  }
+
+  .form-box{
+    max-width: 100%;
+    padding: 16px;
+  }
+
+  .page{ padding: 14px; }
+
+  .inline-row{
+    width: calc(100% - 16px);
+    padding: 12px;
+  }
+
+  .inline-row .grow{ min-width: 100%; }
+
+  /* أي صور داخل الفورم تظل محترمة */
+  img{ max-width:100%; height:auto; }
 }

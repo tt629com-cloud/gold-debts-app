@@ -18,9 +18,28 @@ const daysBetween = (a, b) => Math.floor((b - a) / 86400000);
 const newId = () =>
   Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
 
+// ✅ دعم الأرقام العربية + الفواصل
+function normalizeArabicDigits(s) {
+  const str = String(s ?? "");
+  const map = {
+    "٠":"0","١":"1","٢":"2","٣":"3","٤":"4",
+    "٥":"5","٦":"6","٧":"7","٨":"8","٩":"9",
+    "۰":"0","۱":"1","۲":"2","۳":"3","۴":"4",
+    "۵":"5","۶":"6","۷":"7","۸":"8","۹":"9"
+  };
+  return str
+    .replace(/[٠-٩۰-۹]/g, ch => map[ch] ?? ch)
+    .replace(/[,،\s]/g, "");
+}
+
+function parseAmount(v) {
+  const n = Number(normalizeArabicDigits(v));
+  return Number.isFinite(n) ? n : NaN;
+}
+
 function normalizeMovement(m) {
   const obj = m && typeof m === "object" ? m : {};
-  const amount = Number(obj.amount);
+  const amount = parseAmount(obj.amount);
   return {
     id: obj.id || newId(),
     amount: Number.isFinite(amount) ? amount : 0,
@@ -30,8 +49,8 @@ function normalizeMovement(m) {
 
 function normalizeDebt(d) {
   const obj = d && typeof d === "object" ? d : {};
-  const totalAmount = Number(obj.totalAmount);
-  const remaining = Number(obj.remaining);
+  const totalAmount = parseAmount(obj.totalAmount);
+  const remaining = parseAmount(obj.remaining);
 
   const payments = Array.isArray(obj.payments) ? obj.payments.map(normalizeMovement) : [];
   const additions = Array.isArray(obj.additions) ? obj.additions.map(normalizeMovement) : [];
@@ -73,14 +92,20 @@ function pushAudit(d, action, payload = {}) {
   if (d.auditLog.length > 200) d.auditLog = d.auditLog.slice(d.auditLog.length - 200);
 }
 
-// ✅ قراءة من المحلي (debts.json) عبر storage
-function readDebtsNormalized() {
+// ✅ قراءة أحدث نسخة (سحابة -> محلي -> Normalize)
+async function readDebtsNormalized() {
+  try {
+    await storage.pullLatestToLocal();
+  } catch (e) {
+    // إذا السحابة تعبانة، نكمل على المحلي حتى ما ينهار التطبيق
+    console.error("pullLatestToLocal failed:", e?.message || e);
+  }
+
   let arr = storage.loadLocal();
   if (!Array.isArray(arr)) arr = [];
 
   const normalized = arr.map(normalizeDebt).map(clampDebtNumbers);
 
-  // تثبيت التحديثات على الملف (ids للحركات… الخ)
   const before = JSON.stringify(arr);
   const after = JSON.stringify(normalized);
   if (before !== after) storage.saveLocal(normalized);
@@ -88,7 +113,7 @@ function readDebtsNormalized() {
   return normalized;
 }
 
-// ✅ حفظ محلي + Auto Sync للسحابة بعد كل عملية (غير قاتل للطلب)
+// ✅ حفظ محلي + Auto Sync للسحابة
 const saveDebts = async (debts, touchedId = null) => {
   storage.saveLocal(debts);
   try {
@@ -102,7 +127,6 @@ const saveDebts = async (debts, touchedId = null) => {
 function auth(req, res, next) {
   const h = req.headers.authorization;
 
-  // ✅ منع الكاش
   res.setHeader("Cache-Control", "no-store");
   res.setHeader("WWW-Authenticate", 'Basic realm="Debts App"');
 
@@ -123,10 +147,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// ✅ مزامنة يدوية حقيقية (اختياري للزر)
+// ✅ مزامنة يدوية حقيقية (يشتغل زر المزامنة)
 app.post("/sync", auth, async (req, res) => {
   try {
-    const debts = readDebtsNormalized();
+    const debts = await readDebtsNormalized();
     await storage.forceSync(debts);
     res.json({ ok: true });
   } catch (e) {
@@ -141,19 +165,19 @@ app.post("/debts", auth, async (req, res) => {
   if (!name || totalAmount === undefined || totalAmount === null || totalAmount === "")
     return res.status(400).json({ error: "بيانات ناقصة" });
 
-  const total = Number(totalAmount);
+  const total = parseAmount(totalAmount);
   if (!Number.isFinite(total) || total <= 0)
     return res.status(400).json({ error: "المبلغ الكلي غير صحيح" });
 
   const rem =
     remaining === undefined || remaining === null || remaining === ""
       ? total
-      : Number(remaining);
+      : parseAmount(remaining);
 
   if (!Number.isFinite(rem) || rem < 0)
     return res.status(400).json({ error: "الباقي غير صحيح" });
 
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
 
   const debt = clampDebtNumbers({
     id: Date.now(),
@@ -178,11 +202,11 @@ app.post("/debts", auth, async (req, res) => {
 
 // ===== إضافة دين لنفس المديون =====
 app.post("/debts/:id/add", auth, async (req, res) => {
-  const amount = Number(req.body.amount);
+  const amount = parseAmount(req.body.amount);
   if (!Number.isFinite(amount) || amount <= 0)
     return res.status(400).json({ error: "مبلغ الإضافة غير صحيح" });
 
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
 
@@ -201,11 +225,11 @@ app.post("/debts/:id/add", auth, async (req, res) => {
 
 // ===== تسديد دين =====
 app.post("/debts/:id/pay", auth, async (req, res) => {
-  const amount = Number(req.body.amount);
+  const amount = parseAmount(req.body.amount);
   if (!Number.isFinite(amount) || amount <= 0)
     return res.status(400).json({ error: "مبلغ التسديد غير صحيح" });
 
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
 
@@ -230,11 +254,11 @@ app.post("/debts/:id/pay", auth, async (req, res) => {
 
 // ===== تعديل/حذف تسديدة =====
 app.put("/debts/:id/payments/:pid", auth, async (req, res) => {
-  const newAmount = Number(req.body.amount);
+  const newAmount = parseAmount(req.body.amount);
   if (!Number.isFinite(newAmount) || newAmount <= 0)
     return res.status(400).json({ error: "مبلغ التعديل غير صحيح" });
 
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
 
@@ -259,7 +283,7 @@ app.put("/debts/:id/payments/:pid", auth, async (req, res) => {
 });
 
 app.delete("/debts/:id/payments/:pid", auth, async (req, res) => {
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
 
@@ -279,11 +303,11 @@ app.delete("/debts/:id/payments/:pid", auth, async (req, res) => {
 
 // ===== تعديل/حذف إضافة دين =====
 app.put("/debts/:id/additions/:aid", auth, async (req, res) => {
-  const newAmount = Number(req.body.amount);
+  const newAmount = parseAmount(req.body.amount);
   if (!Number.isFinite(newAmount) || newAmount <= 0)
     return res.status(400).json({ error: "مبلغ التعديل غير صحيح" });
 
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
 
@@ -305,7 +329,7 @@ app.put("/debts/:id/additions/:aid", auth, async (req, res) => {
 });
 
 app.delete("/debts/:id/additions/:aid", auth, async (req, res) => {
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
 
@@ -332,7 +356,7 @@ app.put("/debts/:id", auth, async (req, res) => {
   if (!name || String(name).trim().length < 2)
     return res.status(400).json({ error: "اسم الزبون مطلوب" });
 
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
 
@@ -356,7 +380,7 @@ app.put("/debts/:id", auth, async (req, res) => {
 app.delete("/debts/:id", auth, async (req, res) => {
   const confirmName = String(req.body?.confirmName || "").trim();
 
-  const debts = readDebtsNormalized();
+  const debts = await readDebtsNormalized();
   const idx = debts.findIndex(x => x.id == req.params.id);
   if (idx === -1) return res.sendStatus(404);
 
@@ -372,36 +396,36 @@ app.delete("/debts/:id", auth, async (req, res) => {
 });
 
 // ===== كل الديون / دين واحد =====
-app.get("/debts", auth, (req, res) => {
-  res.json(readDebtsNormalized());
+app.get("/debts", auth, async (req, res) => {
+  res.json(await readDebtsNormalized());
 });
 
-app.get("/debts/:id", auth, (req, res) => {
-  const debts = readDebtsNormalized();
+app.get("/debts/:id", auth, async (req, res) => {
+  const debts = await readDebtsNormalized();
   const d = debts.find(x => x.id == req.params.id);
   if (!d) return res.sendStatus(404);
   res.json(d);
 });
 
 // ===== المتأخرين =====
-app.get("/late-debts", auth, (req, res) => {
+app.get("/late-debts", auth, async (req, res) => {
   const now = new Date();
-  const late = readDebtsNormalized().filter(d =>
+  const late = (await readDebtsNormalized()).filter(d =>
     daysBetween(new Date(d.createdAt), now) > 30 && Number(d.remaining) > 0
   );
   res.json(late);
 });
 
 // ===== مجموع الدين الكلي =====
-app.get("/total-debt", auth, (req, res) => {
-  const debts = readDebtsNormalized();
+app.get("/total-debt", auth, async (req, res) => {
+  const debts = await readDebtsNormalized();
   const total = debts.reduce((sum, d) => sum + (Number(d.remaining) || 0), 0);
   res.json({ total });
 });
 
 // ===== Backup/Restore =====
-app.get("/backup", auth, (req, res) => {
-  const debts = readDebtsNormalized();
+app.get("/backup", auth, async (req, res) => {
+  const debts = await readDebtsNormalized();
   const stamp = new Date().toISOString().slice(0, 10);
   res.setHeader("Content-Type", "application/json; charset=utf-8");
   res.setHeader("Content-Disposition", `attachment; filename="debts-backup-${stamp}.json"`);
