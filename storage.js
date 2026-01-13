@@ -3,47 +3,32 @@ const fs = require("fs");
 const path = require("path");
 const { MongoClient } = require("mongodb");
 
-// ===== ملف الخزن المحلي =====
+/* =========================
+   Local storage (CACHE ONLY)
+   ========================= */
 const FILE = path.join(__dirname, "debts.json");
 if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, "[]");
 
-// ===== MongoDB URI =====
-// • محليًا: يستخدم الرابط المكتوب
-// • أونلاين (Render): يستخدم MONGODB_URI من Environment Variables
+/* =========================
+   MongoDB (SOURCE OF TRUTH)
+   ========================= */
 const MONGODB_URI =
   process.env.MONGODB_URI ||
   "mongodb+srv://tt629com_db_user:eTwICin6eTp4sHRN@cluster0.fz1wdvk.mongodb.net/?appName=Cluster0";
 
-// حماية
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is not defined");
 }
 
-// ===== اسم الداتابيس والكلّكشن =====
 const DB_NAME = "debts_app";
 const COLLECTION = "app_state";
-
-// نخزن كل الديون بوثيقة وحدة
 const STATE_ID = "debts_state_v1";
 
 let client = null;
 
-// ===== محلي =====
-function loadLocal() {
-  try {
-    const raw = fs.readFileSync(FILE, "utf8");
-    const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveLocal(debts) {
-  fs.writeFileSync(FILE, JSON.stringify(debts, null, 2));
-}
-
-// ===== Mongo Client =====
+/* =========================
+   Mongo helpers
+   ========================= */
 async function getClient() {
   if (client) return client;
 
@@ -61,7 +46,39 @@ async function getCollection() {
   return c.db(DB_NAME).collection(COLLECTION);
 }
 
-// ===== رفع للسحابة =====
+/* =========================
+   Local (CACHE)
+   ========================= */
+function loadLocal() {
+  try {
+    const raw = fs.readFileSync(FILE, "utf8");
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveLocal(debts) {
+  fs.writeFileSync(FILE, JSON.stringify(debts, null, 2));
+}
+
+/* =========================
+   Cloud (MASTER)
+   ========================= */
+async function loadCloud() {
+  const col = await getCollection();
+  const doc = await col.findOne({ _id: STATE_ID });
+
+  if (!doc || !Array.isArray(doc.debts)) {
+    return [];
+  }
+
+  // ⬅️ السحابة تطغى دائمًا
+  saveLocal(doc.debts);
+  return doc.debts;
+}
+
 async function syncToCloud(debts) {
   const col = await getCollection();
 
@@ -77,39 +94,24 @@ async function syncToCloud(debts) {
   );
 }
 
-// ===== سحب من السحابة (الأهم) =====
-async function loadCloud() {
-  const col = await getCollection();
-  const doc = await col.findOne({ _id: STATE_ID });
-
-  if (!doc || !Array.isArray(doc.debts)) {
-    return null;
-  }
-
-  return doc.debts;
-}
-
-// ===== Auto Sync (غير قاتل للتطبيق) =====
-async function autoSync(debts, debtId, pushAudit) {
+/* =========================
+   Auto sync (safe)
+   ========================= */
+async function autoSync(debts) {
   try {
-    await syncToCloud(debts);
+    saveLocal(debts);      // cache
+    await syncToCloud(debts); // cloud
     return { ok: true };
   } catch (e) {
-    const msg = e?.message || String(e);
-
-    if (debtId != null && typeof pushAudit === "function") {
-      const d = debts.find(x => String(x.id) === String(debtId));
-      if (d) {
-        pushAudit(d, "SYNC_ERROR", { message: msg });
-        saveLocal(debts);
-      }
-    }
-    return { ok: false, error: msg };
+    return { ok: false, error: e?.message || String(e) };
   }
 }
 
-// ===== مزامنة يدوية =====
+/* =========================
+   Force sync (manual button)
+   ========================= */
 async function forceSync(debts) {
+  saveLocal(debts);
   await syncToCloud(debts);
   return { ok: true };
 }
@@ -117,7 +119,7 @@ async function forceSync(debts) {
 module.exports = {
   loadLocal,
   saveLocal,
-  loadCloud,     // 🔥 هاي الجديدة
+  loadCloud,
   autoSync,
   forceSync
 };

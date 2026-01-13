@@ -92,16 +92,25 @@ function pushAudit(d, action, payload = {}) {
   if (d.auditLog.length > 200) d.auditLog = d.auditLog.slice(d.auditLog.length - 200);
 }
 
-// ✅ قراءة أحدث نسخة (سحابة -> محلي -> Normalize)
+// ✅ قراءة أحدث نسخة (Cloud-first)
 async function readDebtsNormalized() {
+  let arr = null;
+
   try {
-    await storage.pullLatestToLocal();
+    // نحاول نقرأ من السحابة (المصدر الرئيسي)
+    arr = await storage.loadCloud();
+    if (Array.isArray(arr)) {
+      storage.saveLocal(arr); // نحدث المحلي حتى الأجهزة تبقى متطابقة
+    }
   } catch (e) {
-    // إذا السحابة تعبانة، نكمل على المحلي حتى ما ينهار التطبيق
-    console.error("pullLatestToLocal failed:", e?.message || e);
+    console.error("loadCloud failed, fallback to local:", e?.message || e);
   }
 
-  let arr = storage.loadLocal();
+  // إذا السحابة فشلت نرجع للمحلي
+  if (!Array.isArray(arr)) {
+    arr = storage.loadLocal();
+  }
+
   if (!Array.isArray(arr)) arr = [];
 
   const normalized = arr.map(normalizeDebt).map(clampDebtNumbers);
